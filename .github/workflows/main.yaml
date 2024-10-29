@@ -14,13 +14,27 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      # Log in to Heroku CLI to set the stack
+      # Install the Heroku CLI
+      - name: Install Heroku CLI
+        run: |
+          curl https://cli-assets.heroku.com/install.sh | sh
+
+      # Log in to Heroku and set the stack to container
       - name: Set Heroku stack to container
         env:
           HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
         run: |
+          heroku auth:token
           heroku stack:set container -a ${{ secrets.HEROKU_APP_NAME }}
 
       # Build, Push, and Release Docker container to Heroku
       - name: Deploy to Heroku via Docker
-        uses: gonuit/heroku-
+        uses: gonuit/heroku-docker-deploy@v1.3.3
+        with:
+          email: ${{ secrets.HEROKU_EMAIL }}
+          heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
+          heroku_app_name: ${{ secrets.HEROKU_APP_NAME }}
+          dockerfile_directory: ./
+          dockerfile_name: Dockerfile
+          docker_options: '--no-cache'
+          process_type: web
